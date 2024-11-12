@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const knex = require('../knex');
 
@@ -20,7 +20,6 @@ exports.register = async (req, res) => {
 
     await knex('credits').insert({
       user_id: userId,
-      balance: 1000,
     });
 
     res.status(201).json({ userId, message: 'User registered successfully' });
@@ -57,5 +56,23 @@ exports.getCurrentUser = async (req, res) => {
     res.status(200).json({ id: user.id, username: user.username, email: user.email ,  credit: credit ? credit.balance : 0});
   } catch (error) {
     res.status(500).json({ message: 'Error fetching user data', error });
+  }
+};
+
+exports.addCredit = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userCredit = await knex('credits').where({ user_id: userId }).first();
+    if (!userCredit) {
+      return res.status(404).json({ message: 'Credits record not found' });
+    }
+
+    const newBalance = userCredit.balance + 1000;
+    await knex('credits').where({ user_id: userId }).update({ balance: newBalance });
+
+    res.status(200).json({ message: 'Balance updated successfully', newBalance });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating balance', error });
   }
 };

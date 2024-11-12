@@ -11,7 +11,7 @@ exports.up = function (knex) {
       .references("id")
       .inTable("users")
       .onDelete("CASCADE");
-    table.integer("balance").defaultTo(0);
+    table.integer("balance").defaultTo(1000);
     table.timestamps(true, true);
   });
 };

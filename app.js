@@ -6,6 +6,7 @@ const knex = require('./knex');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const searchRouter = require('./routes/search');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(cookieParser());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/search', searchRouter);
 
 async function waitForDatabaseConnection(retries = 10, delay = 1000) {
     while (retries) {
