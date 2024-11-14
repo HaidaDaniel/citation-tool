@@ -7,23 +7,31 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
     const existingUser = await knex('users').where({ email }).first();
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const [userId] = await knex('users').insert({
-      username,
-      email,
-      password: hashedPassword,
-    }).returning('id');
+
+    const [user] = await knex('users')
+      .insert({
+        username,
+        email,
+        password: hashedPassword,
+      })
+      .returning(['id']);
+    const userId = user.id;
 
     await knex('credits').insert({
       user_id: userId,
+      balance: 1000,
     });
 
     res.status(201).json({ userId, message: 'User registered successfully' });
   } catch (error) {
+    console.error('Error registering user:', error);
     res.status(500).json({ message: 'Error registering user', error });
   }
 };
