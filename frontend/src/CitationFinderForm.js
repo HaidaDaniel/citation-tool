@@ -1,8 +1,8 @@
-import React from 'react';
-import { Form, Input } from 'antd';
-import BusinessAutoComplete from './BusinessAutoComplete';
+import React from "react";
+import { Checkbox, Col, Form, Input, Row } from "antd";
+import BusinessAutoComplete from "./BusinessAutoComplete";
 
-const CitationFinderForm = ({ form }) => {
+const CitationFinderForm = ({ form, onSubmit }) => {
   const handleFill = (businessDetails) => {
     form.setFieldsValue({
       name: businessDetails.name,
@@ -13,7 +13,7 @@ const CitationFinderForm = ({ form }) => {
   };
 
   return (
-    <Form form={form} layout="vertical">
+    <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item label="Search Business">
         <BusinessAutoComplete onFill={handleFill} />
       </Form.Item>
@@ -28,6 +28,17 @@ const CitationFinderForm = ({ form }) => {
       </Form.Item>
       <Form.Item label="Website" name="website">
         <Input />
+      </Form.Item>
+      <Form.Item name="type" label="Search Types">
+      <Checkbox.Group>
+        <Row>
+          <Col span={7}><Checkbox value="name">Name</Checkbox></Col>
+          <Col span={7}><Checkbox value="nameAddress">Name + Address</Checkbox></Col>
+          <Col span={7}><Checkbox value="namePhone">Name + Phone</Checkbox></Col>
+          <Col span={7}><Checkbox value="nameWebsite">Name + Website</Checkbox></Col>
+          <Col span={7}><Checkbox value="nameAddressPhone">Name + Address + Phone</Checkbox></Col>
+        </Row>
+      </Checkbox.Group>
       </Form.Item>
     </Form>
   );

@@ -1,49 +1,143 @@
-const searchService = require('../services/searchService');
-const knex = require('../knex');
+const axios = require('axios');
 
-exports.createSearchTask = async (req, res) => {
+
+const createSearchTasks = async (req, res) => {
+  const { name, address, phone, website, type } = req.body;
+  const language_code = "en";
+  const location_code = 2840; // US code
+  const os = "windows";
+  const device = "desktop";
+  const depth = 100;
+
   try {
-    const { body } = req.body;
-    const taskId = await searchService.createSearchTask(body);
-    console.log(res)
-    res.status(202).json({ taskId, message: 'Search task created successfully. Check status for completion.' });
+    const tasks = type.map((t) => {
+      let keyword;
+      switch (t) {
+        case "name":
+          keyword = name;
+          break;
+        case "nameAddress":
+          keyword = `${name} ${address}`;
+          break;
+        case "namePhone":
+          keyword = `${name} ${phone}`;
+          break;
+        case "nameWebsite":
+          keyword = `${name} ${website}`;
+          break;
+        case "nameAddressPhone":
+          keyword = `${name} ${address} ${phone}`;
+          break;
+        default:
+          throw new Error(`Unknown type of keyword: ${t}`);
+      }
+      return {
+        keyword,
+        language_code,
+        os,
+        device,
+        depth,
+        ...(address ? { location_name: address } : { location_code })
+      };
+    });
+
+
+    const response = await axios.post(
+      'https://api.dataforseo.com/v3/serp/google/organic/task_post',
+      tasks,
+      {
+        auth: {
+          username: process.env.DATAFORSEO_EMAIL,
+          password: process.env.DATAFORSEO_PASSWORD,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+
+    const taskIds = response.data.tasks.map(task => task.id);
+    console.log("taskIds:", taskIds);
+    res.status(200).json({
+      message: "Tasks created successfully",
+      taskIds,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating search task', error });
+    console.error("Error creating task:", error.message);
+    res.status(500).json({
+      message: "Error creating task",
+      error: error.message,
+    });
   }
 };
 
-exports.checkTaskStatus = async (req, res) => {
-  try {
-    const { taskId } = req.params;
-    const status = await searchService.checkTaskStatus(taskId);
-    res.status(200).json({ tasks, status });
-  } catch (error) {
-    res.status(500).json({ message: 'Error checking task status', error });
-  }
-};
 
-exports.getSearchResults = async (req, res) => {
-  try {
-    const { taskId } = req.params;
-    const results = await searchService.getTaskResults(taskId);
+const checkTasksStatus = async (req, res) => {
+  const taskIds = req.query.taskIds.split(",");
 
-    const userId = req.user.userId;
-    const userCredits = await knex('credits').where({ user_id: userId }).first();
-    if (userCredits.balance <= 0) {
-      return res.status(403).json({ message: 'Insufficient credits' });
+  try {
+
+    const response = await axios.get(
+      'https://api.dataforseo.com/v3/serp/google/organic/tasks_ready',
+      {
+        auth: {
+          username: process.env.DATAFORSEO_EMAIL,
+          password: process.env.DATAFORSEO_PASSWORD,
+        },
+      }
+    );
+
+    const readyTaskIds = response['data']['tasks'][0]['result'].map((task) => task.id);
+    console.log("readyTaskIds:", readyTaskIds);
+    console.log("taskIds: 2nd", taskIds);
+    const completedTaskIds = taskIds.filter((taskId) =>
+      readyTaskIds.includes(taskId)
+    );
+    console.log("completedTaskIds:", completedTaskIds);
+
+    if (completedTaskIds.length !== taskIds.length) {
+      return res.status(200).json({
+        message: "Tasks are still in progress",
+        status: "pending",
+        completedTaskIds,
+      });
     }
-    await knex('credits').where({ user_id: userId }).update({
-      balance: userCredits.balance - results.length
-    });
-    await knex('search_logs').insert({
-      user_id: userId,
-      search_term: JSON.stringify({ business_name, address, phone }),
-      credits_used: results.length,
-      searched_at: new Date(),
-    });
 
-    res.status(200).json({ results });
+
+    const results = await Promise.all(
+      completedTaskIds.map(async (taskId) => {
+        const resultResponse = await axios.get(
+          `https://api.dataforseo.com/v3/serp/google/organic/task_get/regular/${taskId}`,
+          {
+            auth: {
+              username: process.env.DATAFORSEO_EMAIL,
+              password: process.env.DATAFORSEO_PASSWORD,
+            },
+          }
+        );
+        return {
+          task_id: taskId,
+          result: resultResponse.data,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "All tasks completed",
+      status: "ready",
+      results,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching search results', error });
+    console.error("Error cheking status of tasks", error.message);
+    res.status(500).json({
+      message: "Error cheking status of tasks",
+      error: error.message,
+    });
   }
+};
+
+module.exports = {
+  createSearchTasks,
+  checkTasksStatus,
 };

@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, message, Modal, Form, Input } from 'antd';
 import { loginUser, registerUser } from './api';
+import { AppContext } from './AppContext';
 
 const AuthWidget = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, isAuthenticated, login, logout } = useContext(AppContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -22,28 +18,19 @@ const AuthWidget = () => {
     form.resetFields();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    message.success('Logged out successfully');
-  };
-
   const handleSubmit = async (values) => {
     setLoading(true);
     const { username, email, password } = values;
     try {
       if (isLoginMode) {
-        const token = await loginUser(email, password);
-        if (token) {
-          localStorage.setItem('token', token);
-          setIsAuthenticated(true);
-          message.success('Login successful!');
-          closeModal();
-        }
+        const data = await loginUser(email, password);
+        login(data);
+        message.success('Login successful!');
+        closeModal();
       } else {
         await registerUser(username, email, password);
         message.success('Registration successful! Please log in.');
-        setIsLoginMode(true); // Переключаемся на логин после успешной регистрации
+        setIsLoginMode(true);
       }
     } catch (error) {
       message.error(isLoginMode ? 'Login failed. Please check your credentials.' : 'Registration failed. Please try again.');
@@ -55,9 +42,14 @@ const AuthWidget = () => {
   return (
     <>
       {isAuthenticated ? (
-        <Button onClick={handleLogout} type="primary">
-          Logout
-        </Button>
+        <div style={{ display: 'flex', alignItems: 'center' , color:'red' }}>
+          <span style={{ marginRight: 16 }}>
+            Welcome, {user.username}! Balance: {user.balance} credits
+          </span>
+          <Button onClick={logout} type="primary">
+            Logout
+          </Button>
+        </div>
       ) : (
         <Button onClick={openModal} type="primary">
           {isLoginMode ? 'Login' : 'Register'}

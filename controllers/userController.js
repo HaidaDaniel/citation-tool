@@ -43,12 +43,22 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
+
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token, message: 'Logged in successfully' });
+    
+    const credit = await knex('credits').where({ user_id: user.id }).first();
+    const balance = credit ? credit.balance : 0;
+
+    res.status(200).json({
+      token,
+      user: { id: user.id, username: user.username, email: user.email, balance },
+      message: 'Logged in successfully'
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error });
   }

@@ -3,13 +3,8 @@ const router = express.Router();
 const searchController = require('../controllers/searchController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-// Создание задачи для поиска
-router.post('/create', authMiddleware, searchController.createSearchTask);
+router.post('/tasks', authMiddleware, searchController.createSearchTasks);
 
-// Проверка статуса задачи
-router.get('/status/:taskId', authMiddleware, searchController.checkTaskStatus);
-
-// Получение результатов поиска
-router.get('/results/:taskId', authMiddleware, searchController.getSearchResults);
+router.get('/tasks/status', authMiddleware, searchController.checkTasksStatus);
 
 module.exports = router;

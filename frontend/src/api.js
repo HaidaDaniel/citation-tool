@@ -1,7 +1,18 @@
 import axios from "axios";
 
 const GOOGLE_PLACES_API_KEY = "YOUR_GOOGLE_PLACES_API_KEY";
-const CITATION_API_URL = 'http://localhost:3001/'
+const CITATION_API_URL = "http://localhost:3001/";
+
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export const fetchBusinessSuggestions = async (query) => {
   if (!query) return [];
@@ -15,6 +26,7 @@ export const fetchBusinessSuggestions = async (query) => {
         types: "establishment",
         language: "en",
       },
+      headers: { Authorization: null },
     }
   );
 
@@ -46,37 +58,75 @@ export const fetchBusinessDetails = async (placeId) => {
 };
 
 export const loginUser = async (email, password, onSuccess) => {
-    try {
-      const response = await axios.post(`${CITATION_API_URL}users/login`, {
-        email,
-        password,
-      });
-      const token = response.data.token;
-      
-      if (onSuccess) {
-        onSuccess(token);
-      }
-  
-      return token;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
+  try {
+    const response = await axios.post(`${CITATION_API_URL}users/login`, {
+      email,
+      password,
+    });
+    const data = response.data;
+
+    if (onSuccess) {
+      onSuccess(data.token);
     }
-  };
-  
-  export const registerUser = async (username, email, password, onSuccess) => {
-    try {
-      await axios.post(`${CITATION_API_URL}users/register`, {
-        email,
-        password,
-        username,
-      });
-  
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
+};
+
+export const registerUser = async (username, email, password, onSuccess) => {
+  try {
+    await axios.post(`${CITATION_API_URL}users/register`, {
+      email,
+      password,
+      username,
+    });
+
+    if (onSuccess) {
+      onSuccess();
     }
-  };
+  } catch (error) {
+    console.error("Registration error:", error);
+    throw error;
+  }
+};
+
+export const getCurrentUser = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  const response = await axios.get(`${CITATION_API_URL}users/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const submitSearch = async (data) => {
+  try {
+    const response = await axios.post(`${CITATION_API_URL}search/tasks`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting search:", error);
+    throw error;
+  }
+};
+
+export const checkTaskStatus = async (taskIds) => {
+  try {
+  
+
+    const response = await axios.get(
+      `${CITATION_API_URL}search/tasks/status`,
+      {params: { taskIds: taskIds.join(",") }},
+    );
+    console.log(response)
+    return response.data;
+  } catch (error) {
+    console.error("Error checking task status:", error);
+    throw error;
+  }
+};
