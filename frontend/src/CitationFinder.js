@@ -58,50 +58,10 @@ const CitationFinder = () => {
   const onSubmit = async (values) => {
     console.log(values);
     setLoading(true);
-  
-    try {
 
-      const { taskIds } = await submitSearch(values);
-      console.log('Created tasks:', taskIds);
+    const { taskIds } = await submitSearch(values);
   
-      const interval = setInterval(async () => {
-        try {
-          const response = await checkTaskStatus(taskIds);
-  
-          if (response.status === 'ready') {
-            console.log('All tasks are ready:', response.results);
-            // const combinedData = response.results.map((result) => ({
-
- 
-            //   date: result.tasks[0].results[0].datetime,
-            //   items: result.tasks[0].results[0].items,
-            //   keyword: result.tasks[0].results[0].keyword,
-            //   citationsFound: result.tasks[0].results[0].items_count,
-            //   foundBy: result.foundBy,
-            //   viewSerp: result.tasks[0].results[0].check_url,
-            // }));
-
-            clearInterval(interval);
-  
-
-            // setTableData(response.results);
-  
-            message.success('Search completed successfully!');
-          } else {
-            console.log('Tasks are still pending...');
-          }
-        } catch (error) {
-          console.error('Error checking task status:', error);
-          clearInterval(interval);
-          message.error('Error checking task status');
-        }
-      }, 9000); 
-    } catch (error) {
-      message.error('Error submitting search');
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
+   console.log(taskIds)
   };
 
   return (

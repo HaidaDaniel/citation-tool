@@ -1,15 +1,17 @@
 const axios = require('axios');
-
+const knex = require('../knex');
 
 const createSearchTasks = async (req, res) => {
-  const { name, address, phone, website, type } = req.body;
+  const {  name, address, phone, website, type } = req.body;
   const language_code = "en";
-  const location_code = 2840; // US code
+  const location_code = 2840;
+  const userId = req.user.userId;
   const os = "windows";
   const device = "desktop";
   const depth = 100;
 
   try {
+
     const tasks = type.map((t) => {
       let keyword;
       switch (t) {
@@ -31,16 +33,19 @@ const createSearchTasks = async (req, res) => {
         default:
           throw new Error(`Unknown type of keyword: ${t}`);
       }
+
+      const pingback_url = `${process.env.SERVER_URL}/ping/pingback?id=$id`;
       return {
         keyword,
         language_code,
         os,
         device,
+        type: t,
         depth,
-        ...(address ? { location_name: address } : { location_code })
+        ...(address ? { location_name: address } : { location_code }),
+        pingback_url,
       };
     });
-
 
     const response = await axios.post(
       'https://api.dataforseo.com/v3/serp/google/organic/task_post',
@@ -56,17 +61,25 @@ const createSearchTasks = async (req, res) => {
       }
     );
 
+    const createdTasks = response.data.tasks.map((task, index) => ({
+      task_id: task.id,
+      user_id: userId,
+      keyword: tasks[index].keyword,
+      keyword_type: 'name',
+      status: 'pending',
+    }));
 
-    const taskIds = response.data.tasks.map(task => task.id);
-    console.log("taskIds:", taskIds);
+    console.log("Tasks created successfully:", createdTasks);
+    await knex('tasks').insert(createdTasks);
+
     res.status(200).json({
       message: "Tasks created successfully",
-      taskIds,
+      taskIds: createdTasks.map((t) => t.task_id),
     });
   } catch (error) {
-    console.error("Error creating task:", error.message);
+    console.error("Error creating tasks:", error.message);
     res.status(500).json({
-      message: "Error creating task",
+      message: "Error creating tasks",
       error: error.message,
     });
   }
@@ -89,8 +102,7 @@ const checkTasksStatus = async (req, res) => {
     );
 
     const readyTaskIds = response['data']['tasks'][0]['result'].map((task) => task.id);
-    console.log("readyTaskIds:", readyTaskIds);
-    console.log("taskIds: 2nd", taskIds);
+
     const completedTaskIds = taskIds.filter((taskId) =>
       readyTaskIds.includes(taskId)
     );

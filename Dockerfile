@@ -1,18 +1,17 @@
-# Dockerfile
-
 FROM node:18
 
 WORKDIR /app
 
-
-
+# Устанавливаем зависимости
 COPY package*.json ./
 RUN npm install
 
+
+# Копируем файлы приложения
 COPY . .
 
-# Копируем скрипт ожидания
+# Открываем порты
+EXPOSE 3001
 
-
-# Указываем команду запуска через скрипт ожидания
-CMD [ "npm", "start"]
+# Команда запуска
+CMD ["npm", "start"]
