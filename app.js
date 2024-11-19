@@ -14,6 +14,7 @@ const searchRouter = require('./routes/search');
 
 const userRouter = require("./routes/user");
 const pingRouter = require("./routes/ping");
+const downloadRouter = require("./routes/download");
 
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/user', userRouter);
 app.use('/users', usersRouter);
 app.use('/search', searchRouter);
 app.use("/ping", pingRouter);
+app.use("/files", downloadRouter);
 app.get('/test', (req, res) => {
   res.status(200).json({ message: 'Server is working!' });
 });

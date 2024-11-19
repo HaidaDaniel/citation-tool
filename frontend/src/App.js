@@ -1,10 +1,12 @@
 import "./App.css";
+import AppHeader from "./AppHeader";
 import CitationFinder from "./CitationFinder";
 
 function App() {
   return (
     <div className="App">
-        <CitationFinder />
+      <AppHeader />
+      <CitationFinder />
     </div>
   );
 }

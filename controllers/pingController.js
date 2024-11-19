@@ -10,7 +10,6 @@ const handlePing = async (req, res) => {
   try {
     console.log(`Ping received for task ID: ${taskId}`);
 
-    // Fetch task result from the API
     const response = await axios.get(
       `https://api.dataforseo.com/v3/serp/google/organic/task_get/regular/${taskId}`,
       {
@@ -33,7 +32,6 @@ const handlePing = async (req, res) => {
     const urlCount = result.items_count;
     const date = result.datetime;
 
-    // Save task result to the database and generate Excel file
     const excelFilePath = await saveResultToDBAndCreateExcel({
       taskId,
       keyword,
@@ -55,7 +53,6 @@ const handlePing = async (req, res) => {
   }
 };
 
-// Save results to DB and generate Excel
 const saveResultToDBAndCreateExcel = async ({
   taskId,
   checkUrl,
@@ -77,7 +74,6 @@ const saveResultToDBAndCreateExcel = async ({
     URL: item.url,
   }));
 
-  // Save task details and result data into the `tasks` table
   await knex("tasks")
     .where({ task_id: taskId })
     .update({
@@ -88,15 +84,20 @@ const saveResultToDBAndCreateExcel = async ({
       updated_at: new Date(),
     });
 
-  // Generate Excel file
+  const exportsDir = path.join(__dirname, "../exports");
+
+  if (!fs.existsSync(exportsDir)) {
+    fs.mkdirSync(exportsDir, { recursive: true });
+  }
+
+  const filePath = path.join(exportsDir, `results_${taskId}.xlsx`);
+
   const worksheet = xlsx.utils.json_to_sheet(excelRows);
   const workbook = xlsx.utils.book_new();
   xlsx.utils.book_append_sheet(workbook, worksheet, "Results");
 
-  const filePath = path.join(__dirname, `../exports/results_${taskId}.xlsx`);
   xlsx.writeFile(workbook, filePath);
 
-  // Update tasks table with Excel file path
   await knex("tasks").where({ task_id: taskId }).update({
     excel_file_path: filePath,
   });

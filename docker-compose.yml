@@ -35,6 +35,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - ./exports:/app/exports
   redis:
     image: redis:alpine
     ports:

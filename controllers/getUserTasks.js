@@ -1,11 +1,9 @@
-const knex = require('../knex'); // Import knex for database interaction
+const knex = require('../knex');
 
-// Controller to fetch all tasks for a user
 const getUserTasks = async (req, res) => {
   try {
-    const userId = req.user.userId; // Extract userId from the request object (auth middleware)
+    const userId = req.user.userId;
     
-    // Query to fetch tasks for the user
     const tasks = await knex('tasks')
       .where({ user_id: userId })
       .select(
@@ -17,9 +15,10 @@ const getUserTasks = async (req, res) => {
         'url_qty',
         'excel_file_path',
         'created_at',
-        'updated_at'
+        'updated_at',
+        "result_data",
       )
-      .orderBy('created_at', 'desc'); // Order tasks by creation date, newest first
+      .orderBy('created_at', 'desc'); 
 
     res.status(200).json({
       message: 'Tasks fetched successfully',

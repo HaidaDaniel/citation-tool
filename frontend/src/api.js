@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const GOOGLE_PLACES_API_KEY = "YOUR_GOOGLE_PLACES_API_KEY";
+const GOOGLE_PLACES_API_KEY = process.env.REACT_APP_GOOGLE_PLACES_API_KEY;
 const CITATION_API_URL = "http://localhost:3001/";
 
 axios.interceptors.request.use(
@@ -115,18 +115,7 @@ export const submitSearch = async (data) => {
   }
 };
 
-export const checkTaskStatus = async (taskIds) => {
-  try {
-  
-
-    const response = await axios.get(
-      `${CITATION_API_URL}search/tasks/status`,
-      {params: { taskIds: taskIds.join(",") }},
-    );
-    console.log(response)
-    return response.data;
-  } catch (error) {
-    console.error("Error checking task status:", error);
-    throw error;
-  }
+export const fetchUserTasks = async () => {
+  const response = await axios.get(`${CITATION_API_URL}user/tasks`);
+  return response.data.tasks;
 };

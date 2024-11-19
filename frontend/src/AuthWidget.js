@@ -42,9 +42,9 @@ const AuthWidget = () => {
   return (
     <>
       {isAuthenticated ? (
-        <div style={{ display: 'flex', alignItems: 'center' , color:'red' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '40%', color:"white" }}>
           <span style={{ marginRight: 16 }}>
-            Welcome, {user.username}! Balance: {user.balance} credits
+            Welcome, {user.username}! Balance: {user.credit} credits
           </span>
           <Button onClick={logout} type="primary">
             Logout

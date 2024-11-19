@@ -52,11 +52,10 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
     
     const credit = await knex('credits').where({ user_id: user.id }).first();
-    const balance = credit ? credit.balance : 0;
 
     res.status(200).json({
       token,
-      user: { id: user.id, username: user.username, email: user.email, balance },
+      user: { id: user.id, username: user.username, email: user.email,  credit: credit ? credit.balance : 0 },
       message: 'Logged in successfully'
     });
   } catch (error) {
