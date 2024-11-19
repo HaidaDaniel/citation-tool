@@ -89,6 +89,5 @@ const createSearchTasks = async (req, res) => {
 // Functioon to check the status of tasks and download results
 
 module.exports = {
-  createSearchTasks,
-  checkTasksStatus,
+  createSearchTasks
 };

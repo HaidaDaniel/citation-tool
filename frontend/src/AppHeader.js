@@ -10,6 +10,7 @@ const AppHeader = () => {
 
   const menuItems = [
     { key: 'citationsFinder', label: 'CITATIONS FINDER' },
+    // {key:'creditLog', label:'Balance'}
   ];
  
   return (

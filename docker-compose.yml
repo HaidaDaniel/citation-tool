@@ -41,18 +41,18 @@ services:
     ports:
       - "6379:6379"
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8080:80"
-  #   environment:
-  #     - REACT_APP_API_URL=http://app:3000 
-  #   depends_on:
-  #     - app
-  #   volumes:
-  #     - ./frontend:/frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - REACT_APP_API_URL=http://app:3000 
+    depends_on:
+      - app
+    volumes:
+      - ./frontend:/frontend
 
 volumes:
   postgres-data:
