@@ -5,117 +5,103 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const knex = require('./knex');
-require('dotenv').config();
 const axios = require('axios');
+require('dotenv').config();
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const searchRouter = require('./routes/search');
-
-const userRouter = require("./routes/user");
-const pingRouter = require("./routes/ping");
-const downloadRouter = require("./routes/download");
-
+const apiRouter = require('./routes/api');
 
 const app = express();
-const corsOptions = {
+
+app.use(cors({
   origin: 'http://localhost:3000',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type,Authorization',
   credentials: true,
-};
-
-app.use(cors(corsOptions));
+}));
 app.set("trust proxy", true);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+app.use('/api', apiRouter);
 
-app.use('/', indexRouter);
-app.use('/user', userRouter);
-app.use('/users', usersRouter);
-app.use('/search', searchRouter);
-app.use("/ping", pingRouter);
-app.use("/files", downloadRouter);
 app.get('/test', (req, res) => {
   res.status(200).json({ message: 'Server is working!' });
 });
 
-async function waitForDatabaseConnection(retries = 10, delay = 1000) {
-    while (retries) {
-      try {
-        await knex.raw('SELECT 1');
-        console.log('Database connection established');
-        return true;
-      } catch (err) {
-        console.log(`Database connection failed. Retrying in ${delay / 1000} seconds...`);
-        retries -= 1;
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
+
+const waitForDatabaseConnection = async () => {
+  try {
+    await knex.raw('SELECT 1');
+    console.log('Database connection established');
+  } catch (err) {
     throw new Error('Could not connect to the database');
   }
-  async function fetchNgrokUrl(retries = 5, delay = 10000) {
-    const NGROK_API_URL = 'http://ngrok:4040/api/tunnels';
-  
-    while (retries > 0) {
-      try {
-        const response = await axios.get(NGROK_API_URL);
-        console.log('ngrok response:', response.data);
-        const tunnels = response.data.tunnels || [];
-        if (tunnels.length > 0) {
-          const ngrokUrl = tunnels[0].public_url;
-  
-          const envPath = path.resolve(__dirname, '.env');
-          fs.appendFileSync(envPath, `\nSERVER_URL=${ngrokUrl}\n`);
-          console.log(`SERVER_URL updated to ${ngrokUrl}`);
-          require('dotenv').config({ path: envPath });
-          process.env.SERVER_URL = ngrokUrl;
-          return;
-        }
-      } catch (error) {
-        console.error('Error fetching ngrok URL:', error.message);
+};
+
+const fetchNgrokUrl = async () => {
+  const NGROK_API_URL = 'http://ngrok:4040/api/tunnels';
+  const envPath = path.resolve(__dirname, '.env');
+
+  try {
+    const { data } = await axios.get(NGROK_API_URL);
+    const ngrokUrl = data.tunnels?.[0]?.public_url;
+
+    if (ngrokUrl) {
+      let envContent = '';
+      if (fs.existsSync(envPath)) {
+        envContent = fs.readFileSync(envPath, 'utf-8');
       }
-  
-      retries--;
-      if (retries > 0) {
-        console.log(`Retrying to fetch ngrok URL in ${delay / 1000} seconds...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
+
+      const updatedEnvContent = envContent.includes('SERVER_URL=')
+        ? envContent.replace(/SERVER_URL=.*/g, `SERVER_URL=${ngrokUrl}`)
+        : `${envContent}\nSERVER_URL=${ngrokUrl}`;
+
+      fs.writeFileSync(envPath, updatedEnvContent.trim() + '\n');
+
+      process.env.SERVER_URL = ngrokUrl;
+    } else {
+      console.error('No ngrok URL found.');
     }
-  
-    console.error('Failed to fetch ngrok URL after retries.');
+  } catch (error) {
+    console.error('Error fetching ngrok URL:', error.message);
+  }
+};
+
+const checkServerUrl = async () => {
+  const serverUrl = process.env.SERVER_URL;
+
+  if (!serverUrl) {
+    console.error('SERVER_URL is not defined in the environment variables.');
+    return;
   }
 
-  async function checkServerUrl() {
-    const serverUrl = process.env.SERVER_URL;
-    if (!serverUrl) {
-      console.error('SERVER_URL is not defined in the environment variables.');
-      return;
+  try {
+    const { data, status } = await axios.get(`${serverUrl}/test`);
+    if (status === 200 && data.message === 'Server is working!') {
+      console.log(`Server URL is correct & working: ${serverUrl}`);
+    } else {
+      console.error(`Server URL is not responding as expected: ${serverUrl}`);
     }
-  
-    try {
-      const response = await axios.get(`${serverUrl}/test`);
-      if (response.status === 200 && response.data.message === 'Server is working!') {
-        console.log(`Server URL is correct & working: ${serverUrl}`);
-      } else {
-        console.error(`Server URL is not responding as expected: ${serverUrl}`);
-      }
-    } catch (error) {
-      console.error(`Error checking SERVER_URL: ${error.message}`);
-    }
+  } catch (error) {
+    console.error(`Error checking SERVER_URL: ${error.message}`);
   }
-  
-  waitForDatabaseConnection()
-    .then(() => knex.migrate.latest())
-    .then(() => console.log('Migrations are up to date'))
-    .then(fetchNgrokUrl)
-    .then(checkServerUrl)
-    .catch((err) => {
-      console.error('Migration error:', err);
-      process.exit(1);
-    });
+};
+
+const initializeApp = async () => {
+  try {
+    await waitForDatabaseConnection();
+    await knex.migrate.latest();
+    console.log('Migrations are up to date');
+    await fetchNgrokUrl();
+    await checkServerUrl();
+  } catch (err) {
+    console.error('Initialization error:', err);
+    process.exit(1);
+  }
+};
+
+initializeApp();
 
 module.exports = app;

@@ -8,7 +8,6 @@ const LinksModal = ({ visible, data, onClose }) => {
       message.success('Link copied to clipboard!');
     });
   };
-console.log(data)
   return (
     <Modal
       title={`Links for ${data?.keyword} (${data?.data?.date})`}

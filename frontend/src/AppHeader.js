@@ -8,21 +8,24 @@ const { Header } = Layout;
 
 const AppHeader = () => {
 
-
+  const menuItems = [
+    { key: 'citationsFinder', label: 'CITATIONS FINDER' },
+    // Add other items here
+    // { key: 'locations', label: 'LOCATIONS' },
+    // { key: 'account', label: 'MY ACCOUNT' },
+    // { key: 'geoTagPhotos', label: 'GEO TAG PHOTOS' },
+    // { key: 'linkIndexChecker', label: 'LINK INDEX CHECKER' },
+  ];
+ 
   return (
     <Header>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Menu theme="light" mode="horizontal" defaultSelectedKeys={['citationsFinder']}>
-          {/* <Menu.Item key="locations">LOCATIONS</Menu.Item>
-          <Menu.Item key="account">MY ACCOUNT</Menu.Item>
-          <Menu.Item key="geoTagPhotos">GEO TAG PHOTOS</Menu.Item> */}
-          <Menu.Item key="citationsFinder">CITATIONS FINDER</Menu.Item>
-          {/* <Menu.Item key="linkIndexChecker">LINK INDEX CHECKER</Menu.Item> */}
-        </Menu>
+        <Menu theme="light" mode="horizontal" defaultSelectedKeys={['citationsFinder']} items={menuItems}  style={{ flexGrow: 1 , marginInline:20 } } />
         <AuthWidget />
       </div>
-    </Header>   
+    </Header>
   );
+
 };
 
 export default AppHeader;

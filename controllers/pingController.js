@@ -8,8 +8,6 @@ const handlePing = async (req, res) => {
   const { id: taskId } = req.query;
 
   try {
-    console.log(`Ping received for task ID: ${taskId}`);
-
     const response = await axios.get(
       `https://api.dataforseo.com/v3/serp/google/organic/task_get/regular/${taskId}`,
       {
@@ -41,7 +39,6 @@ const handlePing = async (req, res) => {
       date,
     });
 
-    console.log(`Result saved and Excel created for task ID: ${taskId}`);
     res
       .status(200)
       .json({ message: "Task processed successfully", excelFilePath });

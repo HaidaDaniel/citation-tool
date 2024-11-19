@@ -34,7 +34,7 @@ const createSearchTasks = async (req, res) => {
           throw new Error(`Unknown type of keyword: ${t}`);
       }
 
-      const pingback_url = `${process.env.SERVER_URL}/ping/pingback?id=$id`;
+      const pingback_url = `${process.env.SERVER_URL}/api/ping/pingback?id=$id`;
       return {
         keyword,
         language_code,
@@ -68,7 +68,6 @@ const createSearchTasks = async (req, res) => {
       status: 'pending',
     }));
 
-    console.log("Tasks created successfully:", createdTasks);
     await knex('tasks').insert(createdTasks);
 
     res.status(200).json({
@@ -105,7 +104,7 @@ const checkTasksStatus = async (req, res) => {
     const completedTaskIds = taskIds.filter((taskId) =>
       readyTaskIds.includes(taskId)
     );
-    console.log("completedTaskIds:", completedTaskIds);
+
 
     if (completedTaskIds.length !== taskIds.length) {
       return res.status(200).json({

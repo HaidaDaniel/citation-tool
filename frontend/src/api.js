@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const GOOGLE_PLACES_API_KEY = process.env.REACT_APP_GOOGLE_PLACES_API_KEY;
-const CITATION_API_URL = "http://localhost:3001/";
+const CITATION_API_URL = "http://localhost:3001/api/";
 
 axios.interceptors.request.use(
   (config) => {
@@ -116,6 +116,6 @@ export const submitSearch = async (data) => {
 };
 
 export const fetchUserTasks = async () => {
-  const response = await axios.get(`${CITATION_API_URL}user/tasks`);
+  const response = await axios.get(`${CITATION_API_URL}users/tasks`);
   return response.data.tasks;
 };

@@ -88,7 +88,9 @@ const CitationFinder = () => {
   ];
 
   useEffect(() => {
-    loadTasks();
+    if (isAuthenticated) {
+      loadTasks();
+    }
   }, [isAuthenticated]);
 
   const loadTasks = async () => {
@@ -119,8 +121,6 @@ const CitationFinder = () => {
       message.warning("No file available for download.");
       return;
     }
-  
-   console.log(record.filepath);
   };
 
   const viewLinks = (record) => {
@@ -175,8 +175,6 @@ const CitationFinder = () => {
             />
           </>
         )}
-
-        {/* Use LinksModal here */}
         <LinksModal
           visible={isModalVisible}
           data={modalData}
