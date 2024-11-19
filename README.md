@@ -17,6 +17,7 @@ Installation
 
 webserver url: http://localhost:8080/
 
+![Alt Text](png/ui.png)
 
 Environment Variables
 
