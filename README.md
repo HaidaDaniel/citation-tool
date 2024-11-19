@@ -27,8 +27,8 @@ webserver url: `http://localhost:8080/`
 
 ## Environment Variables
 
-DATABASE_URL=postgresql://admin:admin@db:5432/citation_db
-GOOGLE_PLACES_API_KEY=your_google_places_api_key
-DATAFORSEO_EMAIL=your_dataforseo_email
-DATAFORSEO_PASSWORD=your_dataforseo_password
-SERVER_URL=http://localhost:3001
+- DATABASE_URL=postgresql://admin:admin@db:5432/citation_db
+- GOOGLE_PLACES_API_KEY=your_google_places_api_key
+- DATAFORSEO_EMAIL=your_dataforseo_email
+- DATAFORSEO_PASSWORD=your_dataforseo_password
+- SERVER_URL=http://localhost:3001
