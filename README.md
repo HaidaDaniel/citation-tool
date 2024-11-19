@@ -15,6 +15,8 @@ Integration with Google Places and DataForSEO APIs
 * Clone the repository:
 `git clone https://github.com/HaidaDaniel/citation-tool.git`
 
+* Add environment variables to .env file as in `.env.example`
+
 * Start the application using Docker:
 `docker-compose up -d`
 
