@@ -17,6 +17,11 @@ Installation
 
 webserver url: http://localhost:8080/
 
+
+![Alt Text](https://raw.githubusercontent.com/HaidaDaniel/citation-tool/main/svg/file.svg)
+
+
+
 Environment Variables
 
 DATABASE_URL=postgresql://admin:admin@db:5432/citation_db
