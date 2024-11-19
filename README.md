@@ -15,6 +15,8 @@ Installation
 1 clone repo 
 2 docker-compose up -d
 
+webserver url: http://localhost:8080/
+
 Environment Variables
 
 DATABASE_URL=postgresql://admin:admin@db:5432/citation_db
