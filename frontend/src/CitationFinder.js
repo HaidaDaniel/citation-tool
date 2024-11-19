@@ -42,6 +42,11 @@ const CitationFinder = () => {
       key: "date",
     },
     {
+      title: "Keyword",
+      dataIndex: "keyword",
+      key: "keyword",
+    },
+    {
       title: "Filename",
       dataIndex: "filename",
       key: "filename",
@@ -93,6 +98,7 @@ const CitationFinder = () => {
       const formattedTasks = tasks.map((task) => ({
         key: task.task_id,
         date: task.created_at,
+        keyword: task.keyword,
         filename: task.excel_file_path?.split("/").pop(),
         filepath: task.excel_file_path,
         foundBy: task.keyword_type,
@@ -114,10 +120,7 @@ const CitationFinder = () => {
       return;
     }
   
-    const token = localStorage.getItem("token");
-    const url = `http://localhost:3001/files/download/${record.filename}?token=${encodeURIComponent(token)}`;
-  
-    window.open(url, "_blank");
+   console.log(record.filepath);
   };
 
   const viewLinks = (record) => {

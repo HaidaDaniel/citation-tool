@@ -46,7 +46,7 @@ const createSearchTasks = async (req, res) => {
         pingback_url,
       };
     });
-    
+
     const response = await axios.post(
       'https://api.dataforseo.com/v3/serp/google/organic/task_post',
       tasks,
@@ -60,12 +60,11 @@ const createSearchTasks = async (req, res) => {
         },
       }
     );
-
     const createdTasks = response.data.tasks.map((task, index) => ({
       task_id: task.id,
       user_id: userId,
       keyword: tasks[index].keyword,
-      keyword_type: 'name',
+      keyword_type: tasks[index].type,
       status: 'pending',
     }));
 
