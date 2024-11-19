@@ -18,6 +18,7 @@ import CitationFinderForm from "./CitationFinderForm";
 import LinksModal from "./LinksModal";
 import { fetchUserTasks, submitSearch } from "./api";
 import { AppContext } from "./AppContext";
+import { format } from "date-fns";
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -33,13 +34,14 @@ const CitationFinder = () => {
     links: [],
   });
 
-  const { user, isAuthenticated, login, logout } = useContext(AppContext);
+  const { isAuthenticated } = useContext(AppContext);
 
   const columns = [
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
+      render: (text) => format(new Date(text), "yyyy-MM-dd HH:mm"),
     },
     {
       title: "Keyword",
@@ -109,10 +111,10 @@ const CitationFinder = () => {
         resultData: task.result_data,
       }));
       setTableData(formattedTasks);
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       message.error("Failed to load tasks.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,6 +123,7 @@ const CitationFinder = () => {
       message.warning("No file available for download.");
       return;
     }
+    window.open(record.filepath, "_blank");
   };
 
   const viewLinks = (record) => {
@@ -167,12 +170,18 @@ const CitationFinder = () => {
               placeholder="Search here"
               style={{ marginBottom: "20px" }}
             />
-
-            <Table
-              columns={columns}
-              dataSource={tableData}
-              pagination={{ pageSize: 25 }}
-            />
+            {loading ? (
+              <div style={{ textAlign: "center", margin: "20px 0" }}>
+                <Spin size="large" />
+              </div>
+            ) : (
+              <Table
+                columns={columns}
+                dataSource={tableData}
+                pagination={{ pageSize: 25 }}
+                rowKey="key"
+              />
+            )}
           </>
         )}
         <LinksModal

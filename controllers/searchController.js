@@ -1,8 +1,8 @@
-const axios = require('axios');
-const knex = require('../knex');
+const axios = require("axios");
+const knex = require("../knex");
 
 const createSearchTasks = async (req, res) => {
-  const {  name, address, phone, website, type } = req.body;
+  const { name, address, phone, website, type } = req.body;
   const language_code = "en";
   const location_code = 2840;
   const userId = req.user.userId;
@@ -10,8 +10,10 @@ const createSearchTasks = async (req, res) => {
   const device = "desktop";
   const depth = 100;
 
-  try {
+  // Functionality that cheks if user has enough credits(100) to create search tasks
+  //  checkBalance = async (userId) => {}
 
+  try {
     const tasks = type.map((t) => {
       let keyword;
       switch (t) {
@@ -48,7 +50,7 @@ const createSearchTasks = async (req, res) => {
     });
 
     const response = await axios.post(
-      'https://api.dataforseo.com/v3/serp/google/organic/task_post',
+      "https://api.dataforseo.com/v3/serp/google/organic/task_post",
       tasks,
       {
         auth: {
@@ -56,7 +58,7 @@ const createSearchTasks = async (req, res) => {
           password: process.env.DATAFORSEO_PASSWORD,
         },
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       }
     );
@@ -65,10 +67,10 @@ const createSearchTasks = async (req, res) => {
       user_id: userId,
       keyword: tasks[index].keyword,
       keyword_type: tasks[index].type,
-      status: 'pending',
+      status: "pending",
     }));
 
-    await knex('tasks').insert(createdTasks);
+    await knex("tasks").insert(createdTasks);
 
     res.status(200).json({
       message: "Tasks created successfully",
@@ -83,69 +85,8 @@ const createSearchTasks = async (req, res) => {
   }
 };
 
-
-const checkTasksStatus = async (req, res) => {
-  const taskIds = req.query.taskIds.split(",");
-
-  try {
-
-    const response = await axios.get(
-      'https://api.dataforseo.com/v3/serp/google/organic/tasks_ready',
-      {
-        auth: {
-          username: process.env.DATAFORSEO_EMAIL,
-          password: process.env.DATAFORSEO_PASSWORD,
-        },
-      }
-    );
-
-    const readyTaskIds = response['data']['tasks'][0]['result'].map((task) => task.id);
-
-    const completedTaskIds = taskIds.filter((taskId) =>
-      readyTaskIds.includes(taskId)
-    );
-
-
-    if (completedTaskIds.length !== taskIds.length) {
-      return res.status(200).json({
-        message: "Tasks are still in progress",
-        status: "pending",
-        completedTaskIds,
-      });
-    }
-
-
-    const results = await Promise.all(
-      completedTaskIds.map(async (taskId) => {
-        const resultResponse = await axios.get(
-          `https://api.dataforseo.com/v3/serp/google/organic/task_get/regular/${taskId}`,
-          {
-            auth: {
-              username: process.env.DATAFORSEO_EMAIL,
-              password: process.env.DATAFORSEO_PASSWORD,
-            },
-          }
-        );
-        return {
-          task_id: taskId,
-          result: resultResponse.data,
-        };
-      })
-    );
-
-    res.status(200).json({
-      message: "All tasks completed",
-      status: "ready",
-      results,
-    });
-  } catch (error) {
-    console.error("Error cheking status of tasks", error.message);
-    res.status(500).json({
-      message: "Error cheking status of tasks",
-      error: error.message,
-    });
-  }
-};
+// checkTasksStatusAndDownloadPending (req, res) => {}
+// Functioon to check the status of tasks and download results
 
 module.exports = {
   createSearchTasks,

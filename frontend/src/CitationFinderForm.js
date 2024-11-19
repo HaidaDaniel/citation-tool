@@ -1,5 +1,5 @@
 import React from "react";
-import { Checkbox, Col, Form, Input, Row, Button } from "antd";
+import { Checkbox, Col, Form, Input, Button } from "antd";
 // import BusinessAutoComplete from "./BusinessAutoComplete";
 
 const CitationFinderForm = ({ form, onSubmit }) => {
@@ -18,8 +18,23 @@ const CitationFinderForm = ({ form, onSubmit }) => {
     }
     return Promise.reject(new Error("Please select at least one search type."));
   };
+  const checkboxStyle = {
+    justifyContent: "center",
+    display: "flex",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  };
 
-  const validateDependentFields = () => {
+  const checkboxes = [
+    { label: "Name", value: "name" },
+    { label: "Name + Address", value: "nameAddress" },
+    { label: "Name + Phone", value: "namePhone" },
+    { label: "Name + Website", value: "nameWebsite" },
+    { label: "Name + Address + Phone", value: "nameAddressPhone" },
+  ];
+
+  const validateDepstartentFields = () => {
     const values = form.getFieldsValue();
     const { type, name, address, phone, website } = values;
 
@@ -87,24 +102,21 @@ const CitationFinderForm = ({ form, onSubmit }) => {
         label="Search Types"
         rules={[{ validator: validateCheckboxGroup }]}
       >
-        <Checkbox.Group>
-          <Row gutter={[16, 16]} justify="start">
-            <Col span={12}>
-              <Checkbox value="name">Name</Checkbox>
+        <Checkbox.Group
+          style={{
+            width: "100%",
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          {checkboxes.map((checkbox) => (
+            <Col key={checkbox.value}>
+              <Checkbox value={checkbox.value} style={checkboxStyle}>
+                <span title={checkbox.label}>{checkbox.label}</span>
+              </Checkbox>
             </Col>
-            <Col span={12}>
-              <Checkbox value="nameAddress">Name + Address</Checkbox>
-            </Col>
-            <Col span={12}>
-              <Checkbox value="namePhone">Name + Phone</Checkbox>
-            </Col>
-            <Col span={12}>
-              <Checkbox value="nameWebsite">Name + Website</Checkbox>
-            </Col>
-            <Col span={24}>
-              <Checkbox value="nameAddressPhone">Name + Address + Phone</Checkbox>
-            </Col>
-          </Row>
+          ))}
         </Checkbox.Group>
       </Form.Item>
       <Form.Item shouldUpdate>
@@ -112,9 +124,7 @@ const CitationFinderForm = ({ form, onSubmit }) => {
           <Button
             type="primary"
             htmlType="submit"
-            disabled={
-               form.getFieldsError().some(({ errors }) => errors.length)
-            }
+            disabled={form.getFieldsError().some(({ errors }) => errors.length)}
           >
             Submit
           </Button>

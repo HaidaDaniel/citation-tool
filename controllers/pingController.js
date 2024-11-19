@@ -39,6 +39,9 @@ const handlePing = async (req, res) => {
       date,
     });
 
+  // Function that will decrease credits from user balance
+ // decreaseCredits = async (urlCount) => {}
+
     res
       .status(200)
       .json({ message: "Task processed successfully", excelFilePath });
@@ -80,7 +83,6 @@ const saveResultToDBAndCreateExcel = async ({
       result_data: JSON.stringify(formattedData),
       updated_at: new Date(),
     });
-
   const exportsDir = path.join(__dirname, "../exports");
 
   if (!fs.existsSync(exportsDir)) {
