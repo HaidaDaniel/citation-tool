@@ -13,13 +13,13 @@ Integration with Google Places and DataForSEO APIs
 ## Installation
 
 * Clone the repository:
-git clone https://github.com/HaidaDaniel/citation-tool.git
+`git clone https://github.com/HaidaDaniel/citation-tool.git`
 
 * Start the application using Docker:
-docker-compose up -d
+`docker-compose up -d`
 
 * Access the web application:
-webserver url: http://localhost:8080/
+webserver url: `http://localhost:8080/`
 
 ![Alt Text](png/ui.png)
 
